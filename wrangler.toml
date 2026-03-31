@@ -1,0 +1,24 @@
+name = "fishinglog-ai"
+main = "src/worker.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ENVIRONMENT = "production"
+VESSEL_ID = "vessel-default"
+REGION = "pacific-nw"
+
+[[kv_namespaces]]
+binding = "VESSEL_KV"
+id = "your-kv-namespace-id"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "fishinglog-images"
+
+[[d1_databases]]
+binding = "CATCH_DB"
+database_name = "fishinglog-catch"
+database_id = "your-d1-database-id"
+
+[ai]
+binding = "AI"

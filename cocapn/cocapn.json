@@ -1,0 +1,52 @@
+{
+  "name": "fishinglog-ai",
+  "version": "0.1.0",
+  "vessel": {
+    "id": "vessel-default",
+    "name": "My Vessel",
+    "region": "pacific-nw",
+    "home_port": "Kodiak, AK"
+  },
+  "vision": {
+    "cameras": [
+      { "id": "deck-cam", "position": "deck", "resolution": "4k", "fps": 2 },
+      { "id": "catch-cam", "position": "catch_area", "resolution": "4k", "fps": 2 }
+    ],
+    "model": "yolov8-nano-fp16",
+    "confidence_threshold": 0.7,
+    "review_threshold": 0.5,
+    "species": [
+      "king_salmon", "coho", "sockeye", "pink", "chum",
+      "halibut", "pacific_cod", "pollock", "rockfish",
+      "lingcod", "sablefish", "flatfish"
+    ]
+  },
+  "audio": {
+    "wake_word": "hey cap",
+    "model": "whisper-tiny",
+    "noise_suppression": "rnnoise",
+    "language": "en"
+  },
+  "alerts": {
+    "species_mismatch": true,
+    "confidence_threshold": 0.7,
+    "bycatch_detection": true,
+    "protected_species": ["sea_lion", "sea_otter", "steller_eider", "short_tailed_albatross"]
+  },
+  "reporting": {
+    "regions": ["adfg", "noaa"],
+    "auto_submit": false,
+    "retention_days": 30
+  },
+  "edge": {
+    "device": "jetson-orin-nano-8gb",
+    "storage_gb": 1000,
+    "offline_mode": true,
+    "sync_priority": ["alerts", "corrections", "catch_data", "images"]
+  },
+  "fleet": {
+    "enabled": false,
+    "sharing_level": "anonymous",
+    "vhf_exchange": true
+  }
+}
