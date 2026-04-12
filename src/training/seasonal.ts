@@ -202,7 +202,7 @@ export function suggestLocation(
 }> {
   const patterns = analyzePatterns(catches);
   const relevantPatterns = patterns.filter(
-    p => targetSpecies.includes(p.species) && p.month === currentMonth && p.confidence > 0.3
+    p => targetSpecies.includes(p.species) && p.month === currentMonth && p.confidence > 0
   );
 
   const suggestions: Array<{
