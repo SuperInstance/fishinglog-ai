@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+build/
+.next/
+out/
+.nuxt/
+
+# Testing
+coverage/
+
+# Misc
+.DS_Store
+*.log
+
+# Local env files
+.env*.local
+
+# Wrangler
+.wrangler/
+
+# Public
+public/
