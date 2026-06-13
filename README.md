@@ -62,10 +62,17 @@ FishingLog AI operates in the **γ-layer practical application** space. Within �
 
 See [ARCHITECTURE.md](https://github.com/SuperInstance/SuperInstance/blob/main/ARCHITECTURE.md).
 
+**Offline-first architecture:** The entire app is served as a single HTML payload with inline JavaScript and CSS — no external dependencies, no CDN calls, no font loading. State persists via `localStorage` with a schema version tag for migrations. When connectivity returns, a `navigator.onLine` event listener triggers a sync queue that uploads catch entries as JSON batches to a KV namespace. Conflict resolution is last-write-wins keyed by timestamp + vessel ID, which is safe because each vessel is the sole writer of its own data.
+
+**Quota overage penalties:** IFQ overages carry civil penalties starting at $10,000 per pound over allocation, and criminal penalties for willful violations. Real-time quota tracking is not merely a convenience — it is a legal compliance requirement. The app's quota calculation uses fixed-point arithmetic (integer pounds, not floating-point) to avoid rounding errors that could accumulate over a season's thousands of catch entries.
+
+**Species supported:** The logbook covers all major Alaska commercial species: King crab (red, blue, golden), Tanner crab (bairdi, opilio), Pacific cod, pollock, halibut, sablefish (black cod), all five salmon species, and groundfish (rockfish, flatfish, Atka mackerel). Each species has configurable IFQ category mappings.
+
 ## References
 
 1. NOAA Fisheries (2024). *Alaska Fisheries Science Center: Catch Accounting System*.
 2. NPFMC (2023). *Fishery Management Plan for Bering Sea/Aleutian Islands King and Tanner Crabs*. North Pacific Fishery Management Council.
+3. ADF&G (2024). *Commercial Fisheries Entry Commission: Permit and IFQ Holder Data*. Alaska Department of Fish and Game.
 
 ## License
 
