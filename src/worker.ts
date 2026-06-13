@@ -1,1 +1,142 @@
-export default { async fetch(r: Request) { return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FishingLog — Commercial Logbook</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0a;color:#c9c9c9;font-family:Georgia,'Times New Roman',serif;line-height:1.6}h1,h2,h3,h4{font-family:'JetBrains Mono','Courier New',monospace;color:#e0e0e0}.container{max-width:960px;margin:0 auto;padding:0 2rem}nav{padding:1.5rem 0;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center}nav h1{font-size:1.1rem;color:#4682B4;letter-spacing:0.05em}nav span{font-size:0.8rem;color:#666}header{padding:4rem 0 3rem;border-bottom:1px solid #1a1a1a}header h2{font-size:2.2rem;font-weight:400;margin-bottom:1rem;line-height:1.2}header p{font-size:1.15rem;color:#999;max-width:540px}header .tag{display:inline-block;background:#1a1208;color:#B7410E;padding:0.2rem 0.6rem;border-radius:3px;font-size:0.75rem;font-family:monospace;margin-top:1rem}section{padding:3rem 0;border-bottom:1px solid #1a1a1a}.catch-log{width:100%;border-collapse:collapse;font-size:0.85rem;font-family:'JetBrains Mono',monospace}.catch-log th{text-align:left;color:#666;font-weight:400;padding:0.5rem 0.8rem;border-bottom:1px solid #333;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em}.catch-log td{padding:0.5rem 0.8rem;border-bottom:1px solid #111;color:#b0b0b0}.catch-log tr:hover{background:#111}.species{color:#4682B4;font-weight:600}.weight{color:#c9c9c9}.good{color:#4a7c59}.poor{color:#B7410E}.tide-wrap{display:grid;grid-template-columns:1fr 200px;gap:2rem;align-items:center}.tide-chart{height:80px;position:relative;border-left:1px solid #333;border-bottom:1px solid #333}.tide-wave{position:absolute;bottom:0;left:0;width:100%;height:100%}.tide-label{position:absolute;right:0;font-size:0.65rem;color:#666;font-family:monospace}.tide-info{font-size:0.85rem;color:#888}.tide-info strong{color:#c9c9c9}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem}.feature{padding:1.2rem;border:1px solid #1a1a1a;border-radius:4px}.feature h4{font-size:0.9rem;margin-bottom:0.5rem;color:#4682B4}.feature p{font-size:0.85rem;color:#888;line-height:1.5}.ticket{background:#111;padding:1.2rem;border-left:3px solid #B7410E;font-family:monospace;font-size:0.8rem;margin:1.5rem 0}.ticket .row{display:flex;justify-content:space-between;padding:0.2rem 0;color:#999}.ticket .label{color:#666}.ticket .value{color:#c9c9c9}.ticket .total{border-top:1px solid #333;margin-top:0.5rem;padding-top:0.5rem;color:#4682B4;font-weight:600}footer{padding:2rem 0;text-align:center;font-size:0.75rem;color:#444}footer a{color:#4682B4;text-decoration:none}@media(max-width:640px){.tide-wrap{grid-template-columns:1fr}.features{grid-template-columns:1fr}}</style></head><body><nav class="container"><h1>FISHINGLOG</h1><span>Alaska · Bering Sea · Gulf</span></nav><header class="container"><h2>Your logbook shouldn't<br>require a satellite uplink.</h2><p>Track catch, delivery, quota, and crew hours from the wheelhouse. Works offline. Syncs when you hit range. Built for the boats, not the boardroom.</p><span class="tag">IFQ · CDQ · AFA · COAR</span></header><section class="container"><h3 style="font-size:0.9rem;color:#666;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.08em">Catch Log — F/V Trailblazer · Jan 15, 2026</h3><table class="catch-log"><thead><tr><th>Species</th><th>Weight</th><th>Pot/Set</th><th>Depth</th><th>Bottom °F</th><th>Condition</th></tr></thead><tbody><tr><td class="species">Opilio crab</td><td class="weight">4,200 lbs</td><td>#47</td><td>215 fath</td><td>37.2°</td><td class="good">Good</td></tr><tr><td class="species">Opilio crab</td><td class="weight">3,840 lbs</td><td>#48</td><td>218 fath</td><td>36.9°</td><td class="good">Good</td></tr><tr><td class="species">Opilio crab</td><td class="weight">1,100 lbs</td><td>#49</td><td>222 fath</td><td>37.1°</td><td class="poor">Dead loss 12%</td></tr><tr><td class="species">Bairdi crab</td><td class="weight">620 lbs</td><td>#52</td><td>195 fath</td><td>38.0°</td><td class="good">Good</td></tr><tr><td class="species">Cod (bycatch)</td><td class="weight">180 lbs</td><td>#47</td><td>215 fath</td><td>37.2°</td><td class="poor">Retained</td></tr></tbody></table><div class="ticket"><div class="row"><span class="label">TICKET</span><span class="value">AK-2026-0115-0047</span></div><div class="row"><span class="label">VESSEL</span><span class="value">F/V Trailblazer · CG-1234567</span></div><div class="row"><span class="label">PORT</span><span class="value">Dutch Harbor</span></div><div class="row"><span class="label">BUYER</span><span class="value">UniSea Inc.</span></div><div class="row"><span class="label">SPECIES</span><span class="value">Opilio · Bairdi · Pacific Cod</span></div><div class="row"><span class="label">TOTAL</span><span class="value">9,940 lbs</span></div><div class="row total"><span>QUOTA REMAINING</span><span>41,060 / 51,000 lbs (IFQ S01E)</span></div></div></section><section class="container"><h3 style="font-size:0.9rem;color:#666;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.08em">Tide — Unalaska Bay · Jan 15</h3><div class="tide-wrap"><div class="tide-chart"><svg class="tide-wave" viewBox="0 0 400 80" preserveAspectRatio="none"><path d="M0,60 C30,55 50,30 80,20 C110,10 130,15 160,35 C190,55 210,65 240,50 C270,35 290,15 320,10 C350,5 380,25 400,40" fill="none" stroke="#4682B4" stroke-width="2" opacity="0.7"/><line x1="80" y1="0" x2="80" y2="80" stroke="#333" stroke-width="1" stroke-dasharray="4"/><text x="85" y="14" fill="#4682B4" font-size="10" font-family="monospace">+3.8ft</text><line x1="320" y1="0" x2="320" y2="80" stroke="#333" stroke-width="1" stroke-dasharray="4"/><text x="325" y="14" fill="#4682B4" font-size="10" font-family="monospace">+4.1ft</text><line x1="160" y1="0" x2="160" y2="80" stroke="#B7410E" stroke-width="1" stroke-dasharray="4"/><text x="165" y="78" fill="#B7410E" font-size="10" font-family="monospace">-1.2ft</text><text x="0" y="78" fill="#444" font-size="8" font-family="monospace">00:00</text><text x="95" y="78" fill="#444" font-size="8" font-family="monospace">06:00</text><text x="195" y="78" fill="#444" font-size="8" font-family="monospace">12:00</text><text x="295" y="78" fill="#444" font-size="8" font-family="monospace">18:00</text><text x="375" y="78" fill="#444" font-size="8" font-family="monospace">24:00</text></svg></div><div class="tide-info"><p><strong>High:</strong> 06:12 AST · +3.8 ft</p><p><strong>Low:</strong> 12:34 AST · -1.2 ft</p><p><strong>High:</strong> 18:47 AST · +4.1 ft</p><p style="margin-top:0.8rem;color:#666;font-size:0.75rem">NOAA Unalaska Bay · 53.88°N 166.54°W</p></div></div></section><section class="container"><h3 style="font-size:0.9rem;color:#666;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.08em">What it actually does</h3><div class="features"><div class="feature"><h4>Log catch per pot or set</h4><p>Species, weight, condition, bycatch. Timestamps and coordinates auto-logged. Export to eLandings format.</p></div><div class="feature"><h4>Track IFQ and CDQ balances</h4><p>Know your remaining pounds before you soak. Alerts at 80% and 95% harvest. Linked to your permit.</p></div><div class="feature"><h4>Crew time and share sheets</h4><p>Crew hours, lay share calculations, advance tracking. Generate settlement sheets at delivery.</p></div><div class="feature"><h4>Offline-first wheelhouse mode</h4><p>No signal required. Everything saves locally. Syncs when you're back in range via Wi-Fi or cellular.</p></div><div class="feature"><h4>Fuel and maintenance log</h4><p>Fuel burns per trip, engine hours, pot/line inventory. Maintenance reminders based on actual hours.</p></div><div class="feature"><h4>Delivery history</h4><p>Every ticket, every buyer, every price. Year-over-year comparison by species, season, and area.</p></div></div></section><footer class="container"><a href="https://superinstance.ai">superinstance.ai</a></footer></body></html>`, { headers: {'Content-Type':'text/html; charset=utf-8'} }); } };
+/**
+ * Cloudflare Worker — Cloud Backend for FishingLog.ai
+ *
+ * Handles: species classification (Workers AI), catch data storage (D1),
+ * image storage (R2), vessel memory (KV), and API endpoints.
+ */
+
+import { classifyCloud } from './vision/classifier.js';
+import { transcribeCloud } from './audio/stt.js';
+import { parseIntent } from './audio/intent.js';
+
+export interface Env {
+  AI: any;
+  VESSEL_KV: KVNamespace;
+  IMAGES: R2Bucket;
+  CATCH_DB: D1Database;
+  VESSEL_ID: string;
+  REGION: string;
+}
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS_HEADERS });
+    }
+
+    // Health check
+    if (path === '/api/health') {
+      return jsonResponse({
+        status: 'ok',
+        vessel: env.VESSEL_ID,
+        region: env.REGION,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Vision: classify image
+    if (path === '/api/vision/classify' && request.method === 'POST') {
+      const imageData = await request.arrayBuffer();
+      const result = await classifyCloud(imageData, env);
+      if (!result) {
+        return jsonResponse({ error: 'Cloud classification unavailable' }, 503);
+      }
+      return jsonResponse(result);
+    }
+
+    // Audio: transcribe
+    if (path === '/api/audio/transcribe' && request.method === 'POST') {
+      const audioData = await request.arrayBuffer();
+      const result = await transcribeCloud(audioData, env);
+      if (!result) {
+        return jsonResponse({ error: 'Cloud transcription unavailable' }, 503);
+      }
+      return jsonResponse(result);
+    }
+
+    // Audio: parse intent
+    if (path === '/api/audio/intent' && request.method === 'POST') {
+      const { text } = await request.json() as { text: string };
+      const intent = parseIntent(text);
+      return jsonResponse(intent);
+    }
+
+    // Catch: log a catch record
+    if (path === '/api/catch' && request.method === 'POST') {
+      const catchData = await request.json() as Record<string, unknown>;
+      await env.CATCH_DB.prepare(
+        'INSERT INTO catches (id, species, count, confidence, location, timestamp, source, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(
+        crypto.randomUUID(),
+        catchData.species,
+        catchData.count ?? 1,
+        catchData.confidence ?? 0,
+        JSON.stringify(catchData.location),
+        new Date().toISOString(),
+        catchData.source ?? 'cloud',
+        catchData.notes ?? '',
+      ).run();
+      return jsonResponse({ success: true });
+    }
+
+    // Catch: get daily log
+    if (path === '/api/catch/daily' && request.method === 'GET') {
+      const date = url.searchParams.get('date') ?? new Date().toISOString().split('T')[0];
+      const results = await env.CATCH_DB.prepare(
+        'SELECT * FROM catches WHERE DATE(timestamp) = ? ORDER BY timestamp DESC'
+      ).bind(date).all();
+      return jsonResponse(results.results);
+    }
+
+    // Images: upload
+    if (path === '/api/images' && request.method === 'POST') {
+      const imageData = await request.arrayBuffer();
+      const key = `img_${Date.now()}_${crypto.randomUUID()}`;
+      await env.IMAGES.put(key, imageData);
+      return jsonResponse({ key });
+    }
+
+    // Images: get
+    if (path.startsWith('/api/images/') && request.method === 'GET') {
+      const key = path.replace('/api/images/', '');
+      const object = await env.IMAGES.get(key);
+      if (!object) return jsonResponse({ error: 'Not found' }, 404);
+      return new Response(object.body, {
+        headers: { 'Content-Type': 'image/jpeg', ...CORS_HEADERS },
+      });
+    }
+
+    // Training: status
+    if (path === '/api/training/status' && request.method === 'GET') {
+      const data = await env.VESSEL_KV.get(`training:${env.VESSEL_ID}`);
+      return jsonResponse(data ? JSON.parse(data) : { samples: 0, accuracy: 0 });
+    }
+
+    // Static files — serve from public/
+    if (path === '/' || path === '/index.html') {
+      return fetch(new URL('/index.html', request.url));
+    }
+    if (path === '/app' || path === '/app.html') {
+      return fetch(new URL('/app.html', request.url));
+    }
+
+    return jsonResponse({ error: 'Not found' }, 404);
+  },
+};

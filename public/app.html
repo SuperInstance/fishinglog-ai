@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FishingLog.ai — Vessel Operations Dashboard</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep: #0a1628;
+    --bg-card: #1e293b;
+    --bg-card-hover: #243447;
+    --border: #334155;
+    --accent: #0ea5e9;
+    --accent-dim: #0ea5e944;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --red: #ef4444;
+    --red-bg: #7f1d1d;
+    --amber: #f59e0b;
+    --amber-bg: #78350f;
+    --blue-bg: #1e3a5f;
+    --green: #22c55e;
+    --green-bg: #14532d;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(180deg, #0f1f38 0%, var(--bg-deep) 100%);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent-dim);
+  }
+
+  .vessel-name {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .status-dot.offline {
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+  }
+
+  .header-clock {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ===== DASHBOARD GRID ===== */
+  .dashboard {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* ===== CAMERA FEEDS ===== */
+  .cameras-panel {
+    grid-column: 1;
+    grid-row: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .camera-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .camera-feed {
+    position: relative;
+    background: #050d1a;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    aspect-ratio: 16 / 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-height: 160px;
+  }
+
+  .camera-feed.mismatch {
+    animation: mismatchFlash 1s ease-in-out infinite;
+  }
+
+  @keyframes mismatchFlash {
+    0%, 100% { border-color: var(--border); }
+    50% { border-color: var(--red); box-shadow: 0 0 15px rgba(239,68,68,0.5); }
+  }
+
+  .cam-icon {
+    font-size: 2rem;
+    margin-bottom: 0.35rem;
+    opacity: 0.4;
+  }
+
+  .cam-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .species-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.75);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+  }
+
+  .species-overlay .confidence {
+    color: var(--green);
+  }
+
+  .species-overlay .confidence.medium {
+    color: var(--amber);
+  }
+
+  .species-overlay .confidence.low {
+    color: var(--red);
+  }
+
+  .rec-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  .rec-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: recPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes recPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ===== RIGHT SIDEBAR ===== */
+  .sidebar {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ===== ALERTS ===== */
+  .alerts-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .alerts-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .alert-item {
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .alert-item.critical { background: var(--red-bg); border-left: 3px solid var(--red); }
+  .alert-item.operational { background: var(--amber-bg); border-left: 3px solid var(--amber); }
+  .alert-item.info { background: var(--blue-bg); border-left: 3px solid var(--accent); }
+
+  .alert-item.new {
+    animation: alertSlideIn 0.4s ease-out;
+  }
+
+  @keyframes alertSlideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .alert-text { color: var(--text-primary); font-weight: 500; }
+  .alert-time { color: var(--text-muted); font-size: 0.7rem; }
+
+  .alert-ack-btn {
+    align-self: flex-end;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    min-height: 32px;
+    min-width: 44px;
+    transition: background 0.2s;
+  }
+
+  .alert-ack-btn:hover { background: rgba(255,255,255,0.2); }
+  .alert-ack-btn:active { background: rgba(255,255,255,0.3); }
+
+  /* ===== CAPTAIN CHAT ===== */
+  .chat-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .chat-msg {
+    max-width: 90%;
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .chat-msg.captain {
+    align-self: flex-end;
+    background: #1a3a5c;
+    border: 1px solid #2a5080;
+    color: var(--text-primary);
+  }
+
+  .chat-msg.ai {
+    align-self: flex-start;
+    background: #1a2e1a;
+    border: 1px solid #2a502a;
+    color: #86efac;
+  }
+
+  .chat-msg .sender {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+    opacity: 0.7;
+  }
+
+  .chat-msg.captain .sender { color: var(--accent); }
+  .chat-msg.ai .sender { color: var(--green); }
+
+  .chat-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: #0f1f38;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: var(--font);
+    outline: none;
+    min-height: 44px;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--text-muted); }
+
+  .chat-btn {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .chat-btn:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+  .chat-btn:active { background: #2a4058; }
+
+  .chat-btn.send-btn { background: #1a3a5c; color: var(--accent); }
+  .chat-btn.send-btn:hover { background: #1e4a70; }
+
+  /* ===== CATCH LOG TABLE ===== */
+  .catch-log-panel {
+    grid-column: 1;
+    grid-row: 2;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .catch-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .export-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background 0.2s, border-color 0.2s;
+    font-family: var(--font);
+  }
+
+  .export-btn:hover { background: var(--bg-card-hover); border-color: var(--accent); color: var(--text-primary); }
+
+  .catch-table-wrap {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .catch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  .catch-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .catch-table th {
+    background: #152238;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+  }
+
+  .catch-table th:hover { color: var(--accent); }
+  .catch-table th::after { content: ' \2195'; opacity: 0.3; font-size: 0.6rem; }
+
+  .catch-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #1a2d48;
+    color: var(--text-secondary);
+  }
+
+  .catch-table tr.highlight-new {
+    animation: rowHighlight 2s ease-out;
+  }
+
+  @keyframes rowHighlight {
+    0% { background: rgba(14,165,233,0.25); }
+    100% { background: transparent; }
+  }
+
+  .catch-table .species-icon {
+    margin-right: 0.35rem;
+    font-size: 1rem;
+  }
+
+  .catch-table .confidence-val {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .catch-table .confidence-val.high { color: var(--green); }
+  .catch-table .confidence-val.medium { color: var(--amber); }
+  .catch-table .confidence-val.low { color: var(--red); }
+
+  .catch-table .status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .status-badge.verified { background: var(--green-bg); color: var(--green); }
+  .status-badge.pending { background: var(--amber-bg); color: var(--amber); }
+  .status-badge.flagged { background: var(--red-bg); color: var(--red); }
+
+  /* ===== TRAINING STATUS ===== */
+  .training-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .progress-ring-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+
+  .progress-ring-wrap svg {
+    transform: rotate(-90deg);
+  }
+
+  .progress-ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 8;
+  }
+
+  .progress-ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 314;
+    stroke-dashoffset: 314;
+    transition: stroke-dashoffset 1.5s ease-out;
+  }
+
+  .progress-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .progress-ring-text .pct {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .progress-ring-text .pct-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .training-stats {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .training-stat-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+  }
+
+  .training-stat-row .stat-val {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .ota-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+  }
+
+  .ota-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #38bdf8);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 1.5s ease-out;
+  }
+
+  .ota-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    .dashboard {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      padding: 0.75rem;
+    }
+
+    .sidebar {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .cameras-panel { grid-column: 1; grid-row: auto; }
+    .catch-log-panel { grid-column: 1; grid-row: auto; }
+  }
+
+  @media (max-width: 640px) {
+    .header { padding: 0.5rem 0.75rem; }
+    .logo { font-size: 1.2rem; }
+    .dashboard { padding: 0.5rem; gap: 0.75rem; }
+    .camera-grid { grid-template-columns: 1fr; }
+    .camera-feed { min-height: 120px; }
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-left">
+    <span class="logo">FishingLog.ai</span>
+    <span class="vessel-name">F/V Example</span>
+  </div>
+  <div class="header-right">
+    <div class="status-indicator" id="statusIndicator" title="Click to toggle status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Online</span>
+    </div>
+    <div class="header-clock" id="headerClock"></div>
+  </div>
+</header>
+
+<!-- ===== DASHBOARD ===== -->
+<main class="dashboard">
+
+  <!-- Camera Feeds Panel -->
+  <section class="cameras-panel">
+    <div class="panel-title">Camera Feeds</div>
+    <div class="camera-grid">
+      <div class="camera-feed" id="camDeck">
+        <span class="rec-indicator"><span class="rec-dot"></span>REC</span>
+        <div class="species-overlay">
+          King Salmon <span class="confidence">94%</span>
+        </div>
+        <div class="cam-icon">&#128249;</div>
+        <div class="cam-label">Deck Cam</div>
+      </div>
+      <div class="camera-feed" id="camCatch">
+        <span class="rec-indicator"><span class="rec-dot"></span>REC</span>
+        <div class="species-overlay">
+          Coho Salmon <span class="confidence medium">87%</span>
+        </div>
+        <div class="cam-icon">&#128249;</div>
+        <div class="cam-label">Catch Cam</div>
+      </div>
+      <div class="camera-feed" id="camPort">
+        <span class="rec-indicator"><span class="rec-dot"></span>REC</span>
+        <div class="species-overlay">
+          Halibut <span class="confidence high">96%</span>
+        </div>
+        <div class="cam-icon">&#128249;</div>
+        <div class="cam-label">Port Side</div>
+      </div>
+      <div class="camera-feed mismatch" id="camStarboard">
+        <span class="rec-indicator"><span class="rec-dot"></span>REC</span>
+        <div class="species-overlay">
+          Sockeye <span class="confidence low">62%</span>
+        </div>
+        <div class="cam-icon">&#128249;</div>
+        <div class="cam-label">Starboard</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Alerts Panel -->
+    <section class="alerts-panel">
+      <div class="panel-title">Alerts</div>
+      <div class="alerts-list" id="alertsList">
+        <div class="alert-item critical">
+          <div class="alert-text">&#9888;&#65039; Possible king salmon detected in coho bin</div>
+          <div class="alert-time">2 min ago</div>
+          <button class="alert-ack-btn" onclick="ackAlert(this)">Acknowledge</button>
+        </div>
+        <div class="alert-item operational">
+          <div class="alert-text">&#128202; King salmon quota at 78%</div>
+          <div class="alert-time">15 min ago</div>
+          <button class="alert-ack-btn" onclick="ackAlert(this)">Acknowledge</button>
+        </div>
+        <div class="alert-item info">
+          <div class="alert-text">&#128176; Halibut price update: $12.50/lb</div>
+          <div class="alert-time">1 hr ago</div>
+          <button class="alert-ack-btn" onclick="ackAlert(this)">Acknowledge</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Captain Chat Panel -->
+    <section class="chat-panel">
+      <div class="panel-title">Captain Chat</div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg captain">
+          <div class="sender">Captain</div>
+          King salmon bin one
+        </div>
+        <div class="chat-msg ai">
+          <div class="sender">Vessel AI</div>
+          Logged. King salmon, bin 1. Count today: 23.
+        </div>
+        <div class="chat-msg captain">
+          <div class="sender">Captain</div>
+          Why is that a king?
+        </div>
+        <div class="chat-msg ai">
+          <div class="sender">Vessel AI</div>
+          Based on spotting pattern, gum line color, and body shape. Confidence: 94%.
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <button class="chat-btn" title="Voice input" onclick="voiceInput()">&#127908;</button>
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type a command..."
+               onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-btn send-btn" title="Send" onclick="sendChat()">&#10148;</button>
+      </div>
+    </section>
+
+    <!-- Training Status Panel -->
+    <section class="training-panel">
+      <div class="panel-title">Training Status</div>
+      <div class="progress-ring-wrap">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle class="progress-ring-bg" cx="60" cy="60" r="50"/>
+          <circle class="progress-ring-fill" id="progressRing" cx="60" cy="60" r="50"/>
+        </svg>
+        <div class="progress-ring-text">
+          <span class="pct" id="accuracyPct">0%</span>
+          <span class="pct-label">Accuracy</span>
+        </div>
+      </div>
+      <div class="training-stats">
+        <div class="training-stat-row">
+          <span>Samples collected</span>
+          <span class="stat-val">1,247</span>
+        </div>
+        <div class="training-stat-row">
+          <span>Corrections today</span>
+          <span class="stat-val">8</span>
+        </div>
+        <div class="training-stat-row">
+          <span>Last model update</span>
+          <span class="stat-val">2 days ago</span>
+        </div>
+        <div class="ota-label">OTA model update progress</div>
+        <div class="ota-progress-bar">
+          <div class="ota-progress-fill" id="otaProgress"></div>
+        </div>
+        <div class="ota-label" id="otaPercent">0% complete</div>
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- Catch Log Table -->
+  <section class="catch-log-panel">
+    <div class="catch-log-header">
+      <div class="panel-title" style="margin-bottom:0">Catch Log</div>
+      <button class="export-btn" onclick="exportCatchLog('csv')">&#128196; Export CSV</button>
+    </div>
+    <div class="catch-table-wrap">
+      <table class="catch-table" id="catchTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Time</th>
+            <th onclick="sortTable(1)">Species</th>
+            <th onclick="sortTable(2)">Count</th>
+            <th onclick="sortTable(3)">Avg Size</th>
+            <th onclick="sortTable(4)">Bin</th>
+            <th onclick="sortTable(5)">Confidence</th>
+            <th onclick="sortTable(6)">Status</th>
+          </tr>
+        </thead>
+        <tbody id="catchBody">
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ===== INITIAL DATA =====
+  const catchData = [
+    { time: '06:14', species: 'King Salmon', icon: '&#128031;', count: 3, avgSize: '18.2 lb', bin: '1', confidence: 94, status: 'verified' },
+    { time: '06:32', species: 'Coho Salmon', icon: '&#128031;', count: 7, avgSize: '8.5 lb', bin: '2', confidence: 89, status: 'verified' },
+    { time: '07:01', species: 'Halibut', icon: '&#128032;', count: 1, avgSize: '42.0 lb', bin: '3', confidence: 96, status: 'verified' },
+    { time: '07:45', species: 'Sockeye', icon: '&#128031;', count: 12, avgSize: '6.1 lb', bin: '4', confidence: 62, status: 'flagged' },
+    { time: '08:10', species: 'King Salmon', icon: '&#128031;', count: 2, avgSize: '22.3 lb', bin: '1', confidence: 91, status: 'pending' },
+    { time: '08:38', species: 'Pink Salmon', icon: '&#128031;', count: 15, avgSize: '4.2 lb', bin: '5', confidence: 85, status: 'verified' },
+    { time: '09:02', species: 'Chum Salmon', icon: '&#128031;', count: 4, avgSize: '9.7 lb', bin: '6', confidence: 78, status: 'verified' },
+    { time: '09:22', species: 'Lingcod', icon: '&#128032;', count: 1, avgSize: '28.5 lb', bin: '7', confidence: 92, status: 'verified' },
+  ];
+
+  const alertTemplates = [
+    { text: '&#9888;&#65039; Weight anomaly in bin 3 — re-verify catch', type: 'critical' },
+    { text: '&#128202; Sockeye catch rate trending below forecast', type: 'operational' },
+    { text: '&#127754; Weather advisory: seas building to 6 ft by noon', type: 'info' },
+    { text: '&#9888;&#65039; Duplicate tag detected — possible scan error', type: 'critical' },
+    { text: '&#128202; Halibut bycatch ratio at 4.2% (limit 5%)', type: 'operational' },
+    { text: '&#128176; Dock price update: Chinook $18.75/lb', type: 'info' },
+    { text: '&#9888;&#65039; Bin 4 temperature sensor reading high', type: 'critical' },
+    { text: '&#128202; Daily catch target 67% complete', type: 'operational' },
+    { text: '&#128274; E-log system sync completed', type: 'info' },
+    { text: '&#9888;&#65039; Species mis-match flagged on starboard camera', type: 'critical' },
+  ];
+
+  const aiResponses = [
+    'Roger. Catch logged and verified.',
+    'Confirmed. Updating counts for this set.',
+    'Noted. Current tally updated on the board.',
+    'Copy. I will flag that for the observer.',
+    'Done. Bin assignment recorded.',
+    'Understood. Quota tracking adjusted.',
+    'Logged. Species breakdown updated in real time.',
+  ];
+
+  // ===== CLOCK =====
+  function updateClock() {
+    const now = new Date();
+    const opts = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    document.getElementById('headerClock').textContent = now.toLocaleDateString('en-US', opts);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ===== ONLINE / OFFLINE TOGGLE =====
+  let isOnline = true;
+  function toggleStatus() {
+    isOnline = !isOnline;
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (isOnline) {
+      dot.classList.remove('offline');
+      text.textContent = 'Online';
+    } else {
+      dot.classList.add('offline');
+      text.textContent = 'Offline';
+    }
+  }
+
+  // Toggle every 30 seconds for demo
+  setInterval(toggleStatus, 30000);
+  document.getElementById('statusIndicator').addEventListener('click', toggleStatus);
+
+  // ===== RENDER CATCH TABLE =====
+  function renderCatchTable() {
+    const tbody = document.getElementById('catchBody');
+    tbody.innerHTML = '';
+    catchData.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      let confClass = 'high';
+      if (row.confidence < 75) confClass = 'low';
+      else if (row.confidence < 90) confClass = 'medium';
+
+      tr.innerHTML = `
+        <td>${row.time}</td>
+        <td><span class="species-icon">${row.icon}</span>${row.species}</td>
+        <td>${row.count}</td>
+        <td>${row.avgSize}</td>
+        <td>${row.bin}</td>
+        <td><span class="confidence-val ${confClass}">${row.confidence}%</span></td>
+        <td><span class="status-badge ${row.status}">${row.status.charAt(0).toUpperCase() + row.status.slice(1)}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  renderCatchTable();
+
+  // ===== SORT TABLE =====
+  let sortDir = {};
+  function sortTable(colIndex) {
+    const keys = ['time', 'species', 'count', 'avgSize', 'bin', 'confidence', 'status'];
+    const key = keys[colIndex];
+    sortDir[key] = !sortDir[key];
+    catchData.sort((a, b) => {
+      let va = a[key], vb = b[key];
+      if (key === 'count' || key === 'confidence') {
+        va = Number(va); vb = Number(vb);
+      }
+      if (typeof va === 'string') {
+        va = va.toLowerCase(); vb = vb.toLowerCase();
+      }
+      if (va < vb) return sortDir[key] ? -1 : 1;
+      if (va > vb) return sortDir[key] ? 1 : -1;
+      return 0;
+    });
+    renderCatchTable();
+  }
+
+  // ===== EXPORT =====
+  function exportCatchLog(format) {
+    const headers = ['Time','Species','Count','Avg Size','Bin','Confidence','Status'];
+    let content, mime, ext;
+    if (format === 'csv') {
+      const rows = [headers.join(',')];
+      catchData.forEach(r => {
+        rows.push([r.time, `"${r.species}"`, r.count, r.avgSize, r.bin, r.confidence + '%', r.status].join(','));
+      });
+      content = rows.join('\n');
+      mime = 'text/csv';
+      ext = 'csv';
+    } else {
+      content = JSON.stringify(catchData, null, 2);
+      mime = 'application/json';
+      ext = 'json';
+    }
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `catch-log.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== ACKNOWLEDGE ALERT =====
+  function ackAlert(btn) {
+    const alertItem = btn.closest('.alert-item');
+    alertItem.style.opacity = '0.4';
+    alertItem.style.transition = 'opacity 0.3s';
+    btn.disabled = true;
+    btn.textContent = 'Acknowledged';
+  }
+
+  // ===== ADD RANDOM ALERTS =====
+  function addRandomAlert() {
+    const list = document.getElementById('alertsList');
+    const template = alertTemplates[Math.floor(Math.random() * alertTemplates.length)];
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert-item ${template.type} new`;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    alertDiv.innerHTML = `
+      <div class="alert-text">${template.text}</div>
+      <div class="alert-time">${timeStr}</div>
+      <button class="alert-ack-btn" onclick="ackAlert(this)">Acknowledge</button>
+    `;
+    list.insertBefore(alertDiv, list.firstChild);
+    // Remove 'new' animation class after it plays
+    setTimeout(() => alertDiv.classList.remove('new'), 500);
+    // Keep list manageable
+    while (list.children.length > 12) {
+      list.removeChild(list.lastChild);
+    }
+  }
+
+  setInterval(addRandomAlert, 25000);
+
+  // ===== CAPTAIN CHAT =====
+  function sendChat() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const msgs = document.getElementById('chatMessages');
+
+    // Captain message
+    const capMsg = document.createElement('div');
+    capMsg.className = 'chat-msg captain';
+    capMsg.innerHTML = `<div class="sender">Captain</div>${escapeHtml(text)}`;
+    msgs.appendChild(capMsg);
+
+    input.value = '';
+
+    // AI response after short delay
+    setTimeout(() => {
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'chat-msg ai';
+      const response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+      aiMsg.innerHTML = `<div class="sender">Vessel AI</div>${response}`;
+      msgs.appendChild(aiMsg);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 600);
+
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function voiceInput() {
+    const input = document.getElementById('chatInput');
+    input.placeholder = 'Listening...';
+    input.style.borderColor = 'var(--red)';
+    setTimeout(() => {
+      input.value = 'Log king salmon bin two';
+      input.placeholder = 'Type a command...';
+      input.style.borderColor = '';
+    }, 1500);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // ===== ADD RANDOM CATCH ENTRIES =====
+  const speciesPool = [
+    { species: 'King Salmon', icon: '&#128031;', avgSize: '19.5 lb' },
+    { species: 'Coho Salmon', icon: '&#128031;', avgSize: '7.8 lb' },
+    { species: 'Sockeye', icon: '&#128031;', avgSize: '5.9 lb' },
+    { species: 'Pink Salmon', icon: '&#128031;', avgSize: '4.5 lb' },
+    { species: 'Chum Salmon', icon: '&#128031;', avgSize: '10.2 lb' },
+    { species: 'Halibut', icon: '&#128032;', avgSize: '38.0 lb' },
+    { species: 'Lingcod', icon: '&#128032;', avgSize: '25.0 lb' },
+    { species: 'Rockfish', icon: '&#128032;', avgSize: '6.3 lb' },
+  ];
+
+  function addRandomCatch() {
+    const sp = speciesPool[Math.floor(Math.random() * speciesPool.length)];
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const conf = Math.floor(Math.random() * 30) + 70;
+    const statuses = ['verified', 'pending', 'flagged'];
+    const status = conf > 90 ? 'verified' : statuses[Math.floor(Math.random() * 2)];
+
+    const newEntry = {
+      time: time,
+      species: sp.species,
+      icon: sp.icon,
+      count: Math.floor(Math.random() * 5) + 1,
+      avgSize: sp.avgSize,
+      bin: String(Math.floor(Math.random() * 8) + 1),
+      confidence: conf,
+      status: status,
+    };
+
+    catchData.unshift(newEntry);
+    renderCatchTable();
+
+    // Highlight the new row
+    const firstRow = document.getElementById('catchBody').querySelector('tr');
+    if (firstRow) {
+      firstRow.classList.add('highlight-new');
+      setTimeout(() => firstRow.classList.remove('highlight-new'), 2500);
+    }
+  }
+
+  setInterval(addRandomCatch, 35000);
+
+  // ===== PROGRESS RING ANIMATION =====
+  function animateProgressRing() {
+    const ring = document.getElementById('progressRing');
+    const pctEl = document.getElementById('accuracyPct');
+    const target = 94;
+    const circumference = 2 * Math.PI * 50; // r=50
+    const offset = circumference - (target / 100) * circumference;
+
+    ring.style.strokeDasharray = circumference;
+    setTimeout(() => {
+      ring.style.strokeDashoffset = offset;
+    }, 300);
+
+    // Animate percentage number
+    let current = 0;
+    const step = () => {
+      if (current < target) {
+        current += 1;
+        pctEl.textContent = current + '%';
+        requestAnimationFrame(step);
+      }
+    };
+    setTimeout(step, 400);
+  }
+
+  // ===== OTA PROGRESS BAR ANIMATION =====
+  function animateOTA() {
+    const bar = document.getElementById('otaProgress');
+    const label = document.getElementById('otaPercent');
+    const target = 73;
+    setTimeout(() => {
+      bar.style.width = target + '%';
+      label.textContent = target + '% complete';
+    }, 600);
+  }
+
+  // ===== INIT ANIMATIONS ON LOAD =====
+  window.addEventListener('load', () => {
+    animateProgressRing();
+    animateOTA();
+  });
+</script>
+
+</body>
+</html>

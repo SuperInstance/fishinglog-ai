@@ -1,0 +1,47 @@
+# FishingLog.ai — Multi-Camera Vessel Deployment
+# Deploy on Jetson Orin Nano with 2-4 cameras
+
+services:
+  fishinglog:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fishinglog-ai
+    ports:
+      - "3000:3000"
+    environment:
+      - VESSEL_ID=${VESSEL_ID:-vessel-default}
+      - REGION=${REGION:-pacific-nw}
+      - INFERENCE_PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NODE_ENV=production
+    volumes:
+      - ../cocapn:/app/cocapn:ro
+      - vessel-data:/app/data
+      - model-cache:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Inference server (runs natively on Jetson host, not in Docker)
+  # Connect to host network to access TensorRT
+  inference-proxy:
+    image: nginx:alpine
+    container_name: inference-proxy
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      fishinglog:
+        condition: service_healthy
+
+volumes:
+  vessel-data:
+  model-cache:
